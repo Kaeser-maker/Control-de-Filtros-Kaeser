@@ -15,6 +15,8 @@
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600;700;900&display=swap" rel="stylesheet">
     <!-- Librería XLSX para Exportar a Excel -->
     <script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js"></script>
+    <!-- Cliente de Supabase para Tiempo Real -->
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 
     <style>
         :root {
@@ -41,7 +43,6 @@
 
         .container { max-width: 1200px; margin: 0 auto; }
 
-        /* Header Principal */
         header {
             background: #000000;
             border-bottom: 4px solid var(--kaeser-yellow);
@@ -92,7 +93,6 @@
         .brand-title h1 { font-size: 1.1rem; font-weight: 700; color: #FFF; }
         .brand-title p { font-size: 0.8rem; color: var(--kaeser-yellow); font-weight: 600; }
 
-        /* Tarjetas KPI Multi-columna */
         .kpi-grid {
             display: grid;
             grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
@@ -129,7 +129,6 @@
         .icon-warning { background: rgba(210, 153, 34, 0.15); color: var(--accent-amber); }
         .icon-danger { background: rgba(248, 81, 73, 0.15); color: var(--accent-red); }
 
-        /* Tarjetas Principales */
         .main-card {
             background: var(--card-bg);
             border: 1px solid var(--card-border);
@@ -152,7 +151,6 @@
 
         .card-header h2 { font-size: 1rem; font-weight: 700; display: flex; align-items: center; gap: 8px; }
 
-        /* Formulario Responsive */
         .form-grid {
             display: grid;
             grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
@@ -209,7 +207,6 @@
             background: rgba(255, 204, 0, 0.1);
         }
 
-        /* Botones */
         .btn {
             padding: 12px 20px;
             border-radius: 8px;
@@ -239,7 +236,6 @@
             color: #000;
         }
 
-        /* Tabla Adaptable */
         .table-responsive {
             overflow-x: auto;
             margin-top: 10px;
@@ -295,7 +291,6 @@
 
         .action-btn:hover { color: var(--accent-red); }
 
-        /* Modal */
         .modal-overlay {
             display: none;
             position: fixed;
@@ -338,7 +333,6 @@
             margin-bottom: 8px;
         }
 
-        /* AJUSTES ESPECÍFICOS PARA MÓVILES (Media Queries) */
         @media (max-width: 600px) {
             body { padding: 10px; }
             header { flex-direction: column; align-items: flex-start; }
@@ -363,7 +357,7 @@
             </div>
             <div class="brand-title">
                 <h1>CONTROL DE FILTROS DE LÍNEA</h1>
-                <p><i class="fa-solid fa-circle" style="font-size: 0.4rem;"></i> Monitoreo & Trazabilidad</p>
+                <p><i class="fa-solid fa-circle" style="font-size: 0.4rem;"></i> Monitoreo en Tiempo Real</p>
             </div>
         </div>
         <div>
@@ -520,13 +514,22 @@
 </div>
 
 <script>
+    // --- CONEXIÓN A SUPABASE ---
+    const SUPABASE_URL = "https://cougkvjnndmcimclvkmj.supabase.co";
+    const SUPABASE_KEY = "sb_publishable_8zEtI62KPAtQyurU-pyLcQ_m6P8v7Vw";
+
+    const supabaseClient = supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
+
+    let registrosGlobales = [];
+
+    // Técnicos
     const tecnicosPredeterminados = ["YEFERSON UTIMA", "CARLOS MENDOZA", "JUAN PÉREZ", "ROBERTO GÓMEZ", "MARÍA RODRÍGUEZ"];
 
     function obtenerTecnicos() {
         return JSON.parse(localStorage.getItem('tecnicos_kaeser')) || tecnicosPredeterminados;
     }
 
-    function guardarTecnicos(lista) {
+    function guardarTecnicosLocal(lista) {
         localStorage.setItem('tecnicos_kaeser', JSON.stringify(lista));
         cargarSelectorTecnicos();
         renderizarListaModalTecnicos();
@@ -593,7 +596,7 @@
         if (tecnicos.includes(nombre)) return alert("Este técnico ya existe en la lista.");
 
         tecnicos.push(nombre);
-        guardarTecnicos(tecnicos);
+        guardarTecnicosLocal(tecnicos);
         input.value = "";
     }
 
@@ -603,7 +606,7 @@
 
         if (nuevoNombre && nuevoNombre.trim() !== "") {
             tecnicos[index] = nuevoNombre.trim().toUpperCase();
-            guardarTecnicos(tecnicos);
+            guardarTecnicosLocal(tecnicos);
         }
     }
 
@@ -611,13 +614,37 @@
         const tecnicos = obtenerTecnicos();
         if (confirm(`¿Eliminar a ${tecnicos[index]} de la lista?`)) {
             tecnicos.splice(index, 1);
-            guardarTecnicos(tecnicos);
+            guardarTecnicosLocal(tecnicos);
         }
     }
 
-    function obtenerRegistros() {
-        return JSON.parse(localStorage.getItem('filtros_kaeser') || '[]');
+    // --- CARGAR DATOS EN TIEMPO REAL ---
+    async function cargarDatosDesdeSupabase() {
+        const { data, error } = await supabaseClient
+            .from('filtros')
+            .select('*')
+            .order('created_at', { ascending: false });
+
+        if (error) {
+            console.error("Error al obtener filtros:", error);
+            return;
+        }
+
+        registrosGlobales = data || [];
+        cargarTabla(registrosGlobales);
     }
+
+    // Escuchar cambios instantáneos desde cualquier dispositivo
+    supabaseClient
+        .channel('schema-db-changes')
+        .on(
+            'postgres_changes',
+            { event: '*', schema: 'public', table: 'filtros' },
+            () => {
+                cargarDatosDesdeSupabase();
+            }
+        )
+        .subscribe();
 
     function actualizarKPIs(registros) {
         let ok = 0, warning = 0, danger = 0;
@@ -638,21 +665,19 @@
         document.getElementById('kpi-danger').textContent = danger;
     }
 
-    function cargarTabla() {
-        const registros = obtenerRegistros();
+    function cargarTabla(registros) {
         actualizarKPIs(registros);
-        
         const tbody = document.querySelector("#tablaHistorial tbody");
         tbody.innerHTML = "";
 
         if(registros.length === 0) {
             tbody.innerHTML = `<tr><td colspan="7" style="text-align:center; color: var(--text-muted); padding: 25px;">
-                No hay registros guardados.
+                No hay registros guardados en la base de datos.
             </td></tr>`;
             return;
         }
 
-        registros.forEach((r, index) => {
+        registros.forEach((r) => {
             const hoy = new Date();
             const prox = new Date(r.proximo);
             const diasRestantes = Math.ceil((prox - hoy) / (1000 * 60 * 60 * 24));
@@ -675,7 +700,7 @@
                 <td>${r.tecnico}</td>
                 <td>${badgeHtml}</td>
                 <td>
-                    <button class="action-btn" onclick="eliminarRegistro(${index})" title="Eliminar registro">
+                    <button class="action-btn" onclick="eliminarRegistro(${r.id})" title="Eliminar registro">
                         <i class="fa-solid fa-trash-can"></i>
                     </button>
                 </td>
@@ -701,7 +726,7 @@
         });
     }
 
-    document.getElementById("filterForm").addEventListener("submit", function(e) {
+    document.getElementById("filterForm").addEventListener("submit", async function(e) {
         e.preventDefault();
         const ultimo = new Date(document.getElementById("fecha_ultimo").value);
         const proximo = new Date(ultimo);
@@ -717,28 +742,34 @@
             tecnico: document.getElementById("tecnico").value
         };
 
-        const registros = obtenerRegistros();
-        registros.unshift(nuevoRegistro);
-        localStorage.setItem('filtros_kaeser', JSON.stringify(registros));
+        const { error } = await supabaseClient
+            .from('filtros')
+            .insert([nuevoRegistro]);
 
-        this.reset();
-        cargarTabla();
+        if (error) {
+            alert("Error al guardar: " + error.message);
+        } else {
+            this.reset();
+        }
     });
 
-    function eliminarRegistro(index) {
-        if(confirm("¿Estás seguro de eliminar este registro del historial?")) {
-            const registros = obtenerRegistros();
-            registros.splice(index, 1);
-            localStorage.setItem('filtros_kaeser', JSON.stringify(registros));
-            cargarTabla();
+    async function eliminarRegistro(id) {
+        if(confirm("¿Estás seguro de eliminar este registro en tiempo real?")) {
+            const { error } = await supabaseClient
+                .from('filtros')
+                .delete()
+                .eq('id', id);
+
+            if (error) {
+                alert("Error al eliminar: " + error.message);
+            }
         }
     }
 
     function exportarExcel() {
-        const registros = obtenerRegistros();
-        if (registros.length === 0) return alert("No hay datos para exportar.");
+        if (registrosGlobales.length === 0) return alert("No hay datos para exportar.");
 
-        const dataExcel = registros.map(r => ({
+        const dataExcel = registrosGlobales.map(r => ({
             "Cliente": r.cliente,
             "Planta": r.planta,
             "Tipo Filtro": r.filtro,
@@ -754,17 +785,9 @@
         XLSX.writeFile(workbook, "reporte_filtros_kaeser.xlsx");
     }
 
-    // Service Worker
-    if ('serviceWorker' in navigator) {
-        window.addEventListener('load', () => {
-            navigator.serviceWorker.register('./sw.js')
-                .then(reg => console.log('Service Worker listo:', reg.scope))
-                .catch(err => console.log('Error Service Worker:', err));
-        });
-    }
-
+    // Inicialización
     cargarSelectorTecnicos();
-    cargarTabla();
+    cargarDatosDesdeSupabase();
 </script>
 
 </body>
