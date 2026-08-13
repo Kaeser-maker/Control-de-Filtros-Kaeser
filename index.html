@@ -2,7 +2,7 @@
 <html lang="es">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <title>Kaeser Compresores - Control de Filtros</title>
     <!-- Configuración PWA -->
     <link rel="manifest" href="manifest.json">
@@ -35,32 +35,33 @@
         body {
             background-color: var(--bg-dark);
             color: var(--text-main);
-            padding: 25px;
+            padding: 15px;
             min-height: 100vh;
         }
 
         .container { max-width: 1200px; margin: 0 auto; }
 
-        /* Header Principal con Logo Oficial */
+        /* Header Principal */
         header {
             background: #000000;
             border-bottom: 4px solid var(--kaeser-yellow);
-            padding: 20px 30px;
+            padding: 15px 20px;
             border-radius: 12px;
             display: flex;
             align-items: center;
             justify-content: space-between;
             box-shadow: 0 10px 25px rgba(0,0,0,0.5);
-            margin-bottom: 25px;
+            margin-bottom: 20px;
+            gap: 15px;
+            flex-wrap: wrap;
         }
 
-        .brand { display: flex; align-items: center; gap: 20px; }
+        .brand { display: flex; align-items: center; gap: 15px; flex-wrap: wrap; }
         
-        /* Logo Kaeser Estilizado */
         .kaeser-logo-box {
             background: #000000;
             border: 2px solid #FFFFFF;
-            padding: 8px 16px;
+            padding: 6px 14px;
             border-radius: 4px;
             text-align: center;
             line-height: 1.1;
@@ -69,7 +70,7 @@
 
         .kaeser-logo-box .brand-kaeser {
             color: #FFFFFF;
-            font-size: 1.8rem;
+            font-size: 1.5rem;
             font-weight: 900;
             letter-spacing: 2px;
             font-family: Arial, sans-serif;
@@ -78,7 +79,7 @@
 
         .kaeser-logo-box .brand-sub {
             color: #FFFFFF;
-            font-size: 0.65rem;
+            font-size: 0.6rem;
             font-weight: 700;
             letter-spacing: 1.5px;
             font-family: Arial, sans-serif;
@@ -88,45 +89,39 @@
             padding-top: 2px;
         }
 
-        .brand-title h1 { font-size: 1.25rem; font-weight: 700; color: #FFF; }
-        .brand-title p { font-size: 0.85rem; color: var(--kaeser-yellow); font-weight: 600; }
+        .brand-title h1 { font-size: 1.1rem; font-weight: 700; color: #FFF; }
+        .brand-title p { font-size: 0.8rem; color: var(--kaeser-yellow); font-weight: 600; }
 
-        /* Tarjetas de Resumen KPI */
+        /* Tarjetas KPI Multi-columna */
         .kpi-grid {
             display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
-            gap: 20px;
-            margin-bottom: 25px;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 15px;
+            margin-bottom: 20px;
         }
 
         .kpi-card {
             background: var(--card-bg);
             border: 1px solid var(--card-border);
             border-radius: 12px;
-            padding: 20px;
+            padding: 16px;
             display: flex;
             align-items: center;
             justify-content: space-between;
             box-shadow: 0 4px 15px rgba(0,0,0,0.3);
-            transition: transform 0.2s ease, border-color 0.2s ease;
         }
 
-        .kpi-card:hover {
-            transform: translateY(-3px);
-            border-color: var(--kaeser-yellow);
-        }
-
-        .kpi-data h3 { font-size: 0.8rem; color: var(--text-muted); font-weight: 600; text-transform: uppercase; margin-bottom: 5px; }
-        .kpi-data p { font-size: 1.8rem; font-weight: 800; color: #FFF; }
+        .kpi-data h3 { font-size: 0.75rem; color: var(--text-muted); font-weight: 600; text-transform: uppercase; margin-bottom: 4px; }
+        .kpi-data p { font-size: 1.6rem; font-weight: 800; color: #FFF; }
 
         .kpi-icon {
-            width: 50px;
-            height: 50px;
+            width: 44px;
+            height: 44px;
             border-radius: 10px;
             display: flex;
             align-items: center;
             justify-content: center;
-            font-size: 1.4rem;
+            font-size: 1.2rem;
         }
 
         .icon-total { background: rgba(255, 204, 0, 0.15); color: var(--kaeser-yellow); }
@@ -134,13 +129,13 @@
         .icon-warning { background: rgba(210, 153, 34, 0.15); color: var(--accent-amber); }
         .icon-danger { background: rgba(248, 81, 73, 0.15); color: var(--accent-red); }
 
-        /* Contenedores Principales */
+        /* Tarjetas Principales */
         .main-card {
             background: var(--card-bg);
             border: 1px solid var(--card-border);
             border-radius: 12px;
-            padding: 25px;
-            margin-bottom: 25px;
+            padding: 20px;
+            margin-bottom: 20px;
             box-shadow: 0 4px 15px rgba(0,0,0,0.3);
         }
 
@@ -148,24 +143,24 @@
             display: flex;
             justify-content: space-between;
             align-items: center;
-            margin-bottom: 20px;
+            margin-bottom: 18px;
             border-bottom: 1px solid var(--card-border);
             padding-bottom: 12px;
-            gap: 15px;
+            gap: 12px;
             flex-wrap: wrap;
         }
 
-        .card-header h2 { font-size: 1.1rem; font-weight: 700; display: flex; align-items: center; gap: 10px; }
+        .card-header h2 { font-size: 1rem; font-weight: 700; display: flex; align-items: center; gap: 8px; }
 
-        /* Formulario */
+        /* Formulario Responsive */
         .form-grid {
             display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
-            gap: 18px;
+            grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
+            gap: 15px;
         }
 
         .form-group { display: flex; flex-direction: column; gap: 6px; }
-        .form-group label { font-size: 0.85rem; font-weight: 600; color: var(--text-muted); }
+        .form-group label { font-size: 0.8rem; font-weight: 600; color: var(--text-muted); }
 
         .form-control {
             background: #0D1117;
@@ -175,6 +170,7 @@
             border-radius: 8px;
             font-size: 0.95rem;
             outline: none;
+            min-height: 48px;
             transition: border-color 0.2s ease, box-shadow 0.2s ease;
         }
 
@@ -186,7 +182,7 @@
         input[type="date"]::-webkit-calendar-picker-indicator {
             filter: invert(80%) sepia(85%) saturate(1200%) hue-rotate(350deg) brightness(105%) contrast(105%);
             cursor: pointer;
-            font-size: 1.1rem;
+            font-size: 1.2rem;
         }
 
         .form-control:focus {
@@ -194,17 +190,18 @@
             box-shadow: 0 0 0 3px rgba(255, 204, 0, 0.2);
         }
 
-        /* Botón de gestión de técnicos */
         .btn-manage-techs {
             background: #0D1117;
             border: 1px solid var(--card-border);
             color: var(--kaeser-yellow);
             border-radius: 8px;
-            padding: 0 14px;
+            padding: 0 16px;
             cursor: pointer;
-            font-size: 1.1rem;
-            transition: all 0.2s ease;
-            height: 45px;
+            font-size: 1.2rem;
+            min-height: 48px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
         }
 
         .btn-manage-techs:hover {
@@ -224,62 +221,63 @@
             justify-content: center;
             gap: 8px;
             font-size: 0.95rem;
+            min-height: 48px;
             transition: all 0.2s ease;
         }
 
         .btn-kaeser {
             background: var(--kaeser-yellow);
             color: #000;
-            margin-top: 20px;
+            margin-top: 15px;
             width: 100%;
         }
 
-        .btn-kaeser:hover { background: var(--kaeser-yellow-hover); transform: translateY(-1px); }
+        .btn-kaeser:hover { background: var(--kaeser-yellow-hover); }
 
         .btn-excel {
             background: var(--kaeser-yellow);
             color: #000;
         }
 
-        .btn-excel:hover { background: var(--kaeser-yellow-hover); }
-
-        /* Tabla Estilizada */
-        .table-responsive { overflow-x: auto; margin-top: 10px; }
+        /* Tabla Adaptable */
+        .table-responsive {
+            overflow-x: auto;
+            margin-top: 10px;
+            -webkit-overflow-scrolling: touch;
+        }
 
         table {
             width: 100%;
             border-collapse: collapse;
             text-align: left;
+            min-width: 650px;
         }
 
         th {
             background: #0D1117;
             color: var(--text-muted);
-            font-size: 0.8rem;
+            font-size: 0.75rem;
             text-transform: uppercase;
-            letter-spacing: 0.5px;
-            padding: 14px 16px;
+            padding: 12px 14px;
             border-bottom: 1px solid var(--card-border);
         }
 
         td {
-            padding: 16px;
+            padding: 14px;
             border-bottom: 1px solid var(--card-border);
-            font-size: 0.9rem;
+            font-size: 0.85rem;
             vertical-align: middle;
         }
 
-        tbody tr:hover { background: rgba(255, 255, 255, 0.02); }
-
-        /* Badges de Estado */
         .badge {
             display: inline-flex;
             align-items: center;
             gap: 6px;
-            padding: 6px 12px;
+            padding: 6px 10px;
             border-radius: 20px;
-            font-size: 0.8rem;
+            font-size: 0.75rem;
             font-weight: 600;
+            white-space: nowrap;
         }
 
         .badge-ok { background: rgba(63, 185, 80, 0.15); color: var(--accent-green); border: 1px solid rgba(63, 185, 80, 0.3); }
@@ -292,30 +290,31 @@
             color: var(--text-muted);
             cursor: pointer;
             font-size: 1.1rem;
-            transition: color 0.2s ease;
+            padding: 8px;
         }
 
         .action-btn:hover { color: var(--accent-red); }
 
-        /* Ventana Modal */
+        /* Modal */
         .modal-overlay {
             display: none;
             position: fixed;
             top: 0; left: 0; width: 100%; height: 100%;
-            background: rgba(0, 0, 0, 0.75);
+            background: rgba(0, 0, 0, 0.8);
             z-index: 1000;
             align-items: center;
             justify-content: center;
+            padding: 15px;
             backdrop-filter: blur(4px);
         }
 
         .modal-content {
             background: var(--card-bg);
             border: 1px solid var(--card-border);
-            width: 90%;
+            width: 100%;
             max-width: 480px;
             border-radius: 12px;
-            padding: 25px;
+            padding: 20px;
             box-shadow: 0 10px 30px rgba(0,0,0,0.6);
         }
 
@@ -324,8 +323,8 @@
             justify-content: space-between;
             align-items: center;
             border-bottom: 1px solid var(--card-border);
-            padding-bottom: 12px;
-            margin-bottom: 20px;
+            padding-bottom: 10px;
+            margin-bottom: 15px;
         }
 
         .tech-list-item {
@@ -339,14 +338,23 @@
             margin-bottom: 8px;
         }
 
-        .tech-actions { display: flex; gap: 8px; }
+        /* AJUSTES ESPECÍFICOS PARA MÓVILES (Media Queries) */
+        @media (max-width: 600px) {
+            body { padding: 10px; }
+            header { flex-direction: column; align-items: flex-start; }
+            .kpi-grid { grid-template-columns: repeat(2, 1fr); }
+            .card-header { flex-direction: column; align-items: stretch; }
+            .header-actions { flex-direction: column; width: 100%; gap: 10px; }
+            .search-box { max-width: 100% !important; }
+            .btn-excel { width: 100%; }
+        }
     </style>
 </head>
 <body>
 
 <div class="container">
     
-    <!-- Encabezado Kaeser Compresores -->
+    <!-- Header Kaeser -->
     <header>
         <div class="brand">
             <div class="kaeser-logo-box">
@@ -354,12 +362,12 @@
                 <div class="brand-sub">COMPRESORES ®</div>
             </div>
             <div class="brand-title">
-                <h1>SISTEMA DE CONTROL DE FILTROS DE LÍNEA</h1>
-                <p><i class="fa-solid fa-circle" style="font-size: 0.5rem;"></i> Monitoreo de Mantenimiento & Trazabilidad</p>
+                <h1>CONTROL DE FILTROS DE LÍNEA</h1>
+                <p><i class="fa-solid fa-circle" style="font-size: 0.4rem;"></i> Monitoreo & Trazabilidad</p>
             </div>
         </div>
         <div>
-            <i class="fa-solid fa-gears" style="font-size: 2.2rem; color: var(--kaeser-yellow);"></i>
+            <i class="fa-solid fa-gears" style="font-size: 1.8rem; color: var(--kaeser-yellow);"></i>
         </div>
     </header>
 
@@ -367,21 +375,21 @@
     <div class="kpi-grid">
         <div class="kpi-card">
             <div class="kpi-data">
-                <h3>Total Registrados</h3>
+                <h3>Total</h3>
                 <p id="kpi-total">0</p>
             </div>
             <div class="kpi-icon icon-total"><i class="fa-solid fa-filter"></i></div>
         </div>
         <div class="kpi-card">
             <div class="kpi-data">
-                <h3>Filtros Al Día</h3>
+                <h3>Al Día</h3>
                 <p id="kpi-ok">0</p>
             </div>
             <div class="kpi-icon icon-ok"><i class="fa-solid fa-circle-check"></i></div>
         </div>
         <div class="kpi-card">
             <div class="kpi-data">
-                <h3>Próximos (15 Días)</h3>
+                <h3>Próximos</h3>
                 <p id="kpi-warning">0</p>
             </div>
             <div class="kpi-icon icon-warning"><i class="fa-solid fa-triangle-exclamation"></i></div>
@@ -398,7 +406,7 @@
     <!-- Formulario -->
     <div class="main-card">
         <div class="card-header">
-            <h2><i class="fa-solid fa-pen-to-square" style="color: var(--kaeser-yellow);"></i> Registrar Cambio de Elemento Filtrante</h2>
+            <h2><i class="fa-solid fa-pen-to-square" style="color: var(--kaeser-yellow);"></i> Registrar Cambio de Elemento</h2>
         </div>
         <form id="filterForm">
             <div class="form-grid">
@@ -424,14 +432,13 @@
                     <input type="date" id="fecha_ultimo" class="form-control" required onclick="this.showPicker()">
                 </div>
                 
-                <!-- Técnico Responsable con Botón de Administración -->
                 <div class="form-group">
                     <label>Técnico Responsable</label>
                     <div style="display: flex; gap: 8px;">
                         <select id="tecnico" class="form-control" required style="flex: 1;">
-                            <!-- Opciones cargadas dinámicamente -->
+                            <!-- Opciones -->
                         </select>
-                        <button type="button" class="btn-manage-techs" onclick="abrirModalTecnicos()" title="Administrar Lista de Técnicos">
+                        <button type="button" class="btn-manage-techs" onclick="abrirModalTecnicos()" title="Administrar Técnicos">
                             <i class="fa-solid fa-gear"></i>
                         </button>
                     </div>
@@ -443,26 +450,26 @@
         </form>
     </div>
 
-    <!-- Historial con Buscador Incorporado -->
+    <!-- Historial -->
     <div class="main-card">
         <div class="card-header">
-            <h2><i class="fa-solid fa-list-check" style="color: var(--kaeser-yellow);"></i> Historial y Próximos Cambios</h2>
+            <h2><i class="fa-solid fa-list-check" style="color: var(--kaeser-yellow);"></i> Historial</h2>
             
-            <div style="display: flex; gap: 12px; align-items: center; flex: 1; max-width: 500px; justify-content: flex-end;">
-                <div style="position: relative; width: 100%; max-width: 280px;">
+            <div class="header-actions" style="display: flex; gap: 10px; align-items: center; flex: 1; max-width: 500px; justify-content: flex-end;">
+                <div class="search-box" style="position: relative; width: 100%; max-width: 260px;">
                     <i class="fa-solid fa-magnifying-glass" style="position: absolute; left: 12px; top: 50%; transform: translateY(-50%); color: var(--text-muted);"></i>
                     <input 
                         type="text" 
                         id="buscadorCliente" 
                         class="form-control" 
-                        placeholder="Buscar por cliente o planta..." 
+                        placeholder="Buscar cliente/planta..." 
                         onkeyup="filtrarTabla()"
-                        style="padding-left: 36px; height: 42px; font-size: 0.85rem;"
+                        style="padding-left: 36px; min-height: 42px; font-size: 0.85rem;"
                     >
                 </div>
 
-                <button class="btn btn-excel" onclick="exportarExcel()" style="white-space: nowrap; height: 42px;">
-                    <i class="fa-solid fa-file-excel"></i> Exportar a Excel
+                <button class="btn btn-excel" onclick="exportarExcel()" style="white-space: nowrap; min-height: 42px;">
+                    <i class="fa-solid fa-file-excel"></i> Exportar
                 </button>
             </div>
         </div>
@@ -481,7 +488,7 @@
                     </tr>
                 </thead>
                 <tbody>
-                    <!-- Datos dinámicos -->
+                    <!-- Datos -->
                 </tbody>
             </table>
         </div>
@@ -489,7 +496,7 @@
 
 </div>
 
-<!-- Modal para Gestionar Técnicos -->
+<!-- Modal -->
 <div id="modalTecnicos" class="modal-overlay">
     <div class="modal-content">
         <div class="modal-header">
@@ -498,14 +505,14 @@
         </div>
         
         <div style="display: flex; gap: 8px; margin-bottom: 15px;">
-            <input type="text" id="nuevoTecnico" class="form-control" placeholder="Nombre de nuevo técnico..." style="flex: 1;">
+            <input type="text" id="nuevoTecnico" class="form-control" placeholder="Nombre técnico..." style="flex: 1;">
             <button type="button" class="btn btn-excel" onclick="agregarTecnico()" style="padding: 0 15px;">
-                <i class="fa-solid fa-plus"></i> Agregar
+                <i class="fa-solid fa-plus"></i>
             </button>
         </div>
 
         <div id="listaTecnicosModal" style="max-height: 250px; overflow-y: auto;">
-            <!-- Técnicos renderizados aquí -->
+            <!-- Lista -->
         </div>
 
         <button type="button" class="btn btn-kaeser" onclick="cerrarModalTecnicos()" style="margin-top: 15px;">Listo</button>
@@ -513,7 +520,6 @@
 </div>
 
 <script>
-    // Técnicos por defecto
     const tecnicosPredeterminados = ["YEFERSON UTIMA", "CARLOS MENDOZA", "JUAN PÉREZ", "ROBERTO GÓMEZ", "MARÍA RODRÍGUEZ"];
 
     function obtenerTecnicos() {
@@ -640,8 +646,8 @@
         tbody.innerHTML = "";
 
         if(registros.length === 0) {
-            tbody.innerHTML = `<tr><td colspan="7" style="text-align:center; color: var(--text-muted); padding: 30px;">
-                No hay registros guardados. Utiliza el formulario superior para añadir el primer filtro.
+            tbody.innerHTML = `<tr><td colspan="7" style="text-align:center; color: var(--text-muted); padding: 25px;">
+                No hay registros guardados.
             </td></tr>`;
             return;
         }
@@ -748,16 +754,15 @@
         XLSX.writeFile(workbook, "reporte_filtros_kaeser.xlsx");
     }
 
-    // Registrar Service Worker para PWA / Uso Offline
+    // Service Worker
     if ('serviceWorker' in navigator) {
         window.addEventListener('load', () => {
             navigator.serviceWorker.register('./sw.js')
-                .then(reg => console.log('PWA Service Worker listo:', reg.scope))
-                .catch(err => console.log('Error al registrar Service Worker:', err));
+                .then(reg => console.log('Service Worker listo:', reg.scope))
+                .catch(err => console.log('Error Service Worker:', err));
         });
     }
 
-    // Inicialización
     cargarSelectorTecnicos();
     cargarTabla();
 </script>
