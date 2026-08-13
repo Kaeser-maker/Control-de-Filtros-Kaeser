@@ -178,13 +178,11 @@
             transition: border-color 0.2s ease, box-shadow 0.2s ease;
         }
 
-        /* Estilo especial para que la casilla de fecha abra el calendario al hacer clic */
         input[type="date"].form-control {
             cursor: pointer;
             color-scheme: dark;
         }
 
-        /* Cambia el ícono del calendario a amarillo Kaeser */
         input[type="date"]::-webkit-calendar-picker-indicator {
             filter: invert(80%) sepia(85%) saturate(1200%) hue-rotate(350deg) brightness(105%) contrast(105%);
             cursor: pointer;
@@ -194,6 +192,24 @@
         .form-control:focus {
             border-color: var(--kaeser-yellow);
             box-shadow: 0 0 0 3px rgba(255, 204, 0, 0.2);
+        }
+
+        /* Botón de configuración de técnicos */
+        .btn-manage-techs {
+            background: #0D1117;
+            border: 1px solid var(--card-border);
+            color: var(--kaeser-yellow);
+            border-radius: 8px;
+            padding: 0 14px;
+            cursor: pointer;
+            font-size: 1.1rem;
+            transition: all 0.2s ease;
+            height: 45px;
+        }
+
+        .btn-manage-techs:hover {
+            border-color: var(--kaeser-yellow);
+            background: rgba(255, 204, 0, 0.1);
         }
 
         /* Botones */
@@ -280,6 +296,50 @@
         }
 
         .action-btn:hover { color: var(--accent-red); }
+
+        /* Ventana Modal de Gestión de Técnicos */
+        .modal-overlay {
+            display: none;
+            position: fixed;
+            top: 0; left: 0; width: 100%; height: 100%;
+            background: rgba(0, 0, 0, 0.75);
+            z-index: 1000;
+            align-items: center;
+            justify-content: center;
+            backdrop-filter: blur(4px);
+        }
+
+        .modal-content {
+            background: var(--card-bg);
+            border: 1px solid var(--card-border);
+            width: 90%;
+            max-width: 480px;
+            border-radius: 12px;
+            padding: 25px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.6);
+        }
+
+        .modal-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            border-bottom: 1px solid var(--card-border);
+            padding-bottom: 12px;
+            margin-bottom: 20px;
+        }
+
+        .tech-list-item {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 10px 12px;
+            background: #0D1117;
+            border: 1px solid var(--card-border);
+            border-radius: 6px;
+            margin-bottom: 8px;
+        }
+
+        .tech-actions { display: flex; gap: 8px; }
     </style>
 </head>
 <body>
@@ -359,23 +419,22 @@
                     <input type="text" id="elemento" class="form-control" placeholder="Ej: Elemento E-B 18" required>
                 </div>
                 
-                <!-- Campo de fecha con despliegue automático de calendario -->
                 <div class="form-group">
                     <label>Fecha de Último Cambio</label>
                     <input type="date" id="fecha_ultimo" class="form-control" required onclick="this.showPicker()">
                 </div>
                 
-                <!-- Desplegable para seleccionar el técnico -->
+                <!-- Técnico Responsable con Botón de Administración -->
                 <div class="form-group">
                     <label>Técnico Responsable</label>
-                    <select id="tecnico" class="form-control" required>
-                        <option value="" disabled selected>Seleccione un técnico...</option>
-                        <option value="YEFERSON UTIMA">YEFERSON UTIMA</option>
-                        <option value="CARLOS MENDOZA">CARLOS MENDOZA</option>
-                        <option value="JUAN PÉREZ">JUAN PÉREZ</option>
-                        <option value="ROBERTO GÓMEZ">ROBERTO GÓMEZ</option>
-                        <option value="MARÍA RODRÍGUEZ">MARÍA RODRÍGUEZ</option>
-                    </select>
+                    <div style="display: flex; gap: 8px;">
+                        <select id="tecnico" class="form-control" required style="flex: 1;">
+                            <!-- Opciones cargadas dinámicamente -->
+                        </select>
+                        <button type="button" class="btn-manage-techs" onclick="abrirModalTecnicos()" title="Administrar Lista de Técnicos">
+                            <i class="fa-solid fa-gear"></i>
+                        </button>
+                    </div>
                 </div>
             </div>
             <button type="submit" class="btn btn-kaeser">
@@ -390,7 +449,6 @@
             <h2><i class="fa-solid fa-list-check" style="color: var(--kaeser-yellow);"></i> Historial y Próximos Cambios</h2>
             
             <div style="display: flex; gap: 12px; align-items: center; flex: 1; max-width: 500px; justify-content: flex-end;">
-                <!-- Campo de búsqueda en tiempo real -->
                 <div style="position: relative; width: 100%; max-width: 280px;">
                     <i class="fa-solid fa-magnifying-glass" style="position: absolute; left: 12px; top: 50%; transform: translateY(-50%); color: var(--text-muted);"></i>
                     <input 
@@ -403,7 +461,6 @@
                     >
                 </div>
 
-                <!-- Botón Exportar Excel -->
                 <button class="btn btn-excel" onclick="exportarExcel()" style="white-space: nowrap; height: 42px;">
                     <i class="fa-solid fa-file-excel"></i> Exportar a Excel
                 </button>
@@ -432,7 +489,126 @@
 
 </div>
 
+<!-- Modal para Gestionar Técnicos -->
+<div id="modalTecnicos" class="modal-overlay">
+    <div class="modal-content">
+        <div class="modal-header">
+            <h3><i class="fa-solid fa-user-gear" style="color: var(--kaeser-yellow);"></i> Gestión de Técnicos</h3>
+            <button class="action-btn" onclick="cerrarModalTecnicos()"><i class="fa-solid fa-xmark"></i></button>
+        </div>
+        
+        <div style="display: flex; gap: 8px; margin-bottom: 15px;">
+            <input type="text" id="nuevoTecnico" class="form-control" placeholder="Nombre de nuevo técnico..." style="flex: 1;">
+            <button type="button" class="btn btn-excel" onclick="agregarTecnico()" style="padding: 0 15px;">
+                <i class="fa-solid fa-plus"></i> Agregar
+            </button>
+        </div>
+
+        <div id="listaTecnicosModal" style="max-height: 250px; overflow-y: auto;">
+            <!-- Técnicos renderizados aquí -->
+        </div>
+
+        <button type="button" class="btn btn-kaeser" onclick="cerrarModalTecnicos()" style="margin-top: 15px;">Listo</button>
+    </div>
+</div>
+
 <script>
+    // Técnicos por defecto
+    const tecnicosPredeterminados = ["YEFERSON UTIMA", "CARLOS MENDOZA", "JUAN PÉREZ", "ROBERTO GÓMEZ", "MARÍA RODRÍGUEZ"];
+
+    function obtenerTecnicos() {
+        return JSON.parse(localStorage.getItem('tecnicos_kaeser')) || tecnicosPredeterminados;
+    }
+
+    function guardarTecnicos(lista) {
+        localStorage.setItem('tecnicos_kaeser', JSON.stringify(lista));
+        cargarSelectorTecnicos();
+        renderizarListaModalTecnicos();
+    }
+
+    function cargarSelectorTecnicos() {
+        const tecnicos = obtenerTecnicos();
+        const select = document.getElementById("tecnico");
+        const valorSeleccionado = select.value;
+
+        select.innerHTML = '<option value="" disabled selected>Seleccione un técnico...</option>';
+        tecnicos.forEach(t => {
+            const option = document.createElement("option");
+            option.value = t;
+            option.textContent = t;
+            select.appendChild(option);
+        });
+
+        if (tecnicos.includes(valorSeleccionado)) {
+            select.value = valorSeleccionado;
+        }
+    }
+
+    function abrirModalTecnicos() {
+        renderizarListaModalTecnicos();
+        document.getElementById("modalTecnicos").style.display = "flex";
+    }
+
+    function cerrarModalTecnicos() {
+        document.getElementById("modalTecnicos").style.display = "none";
+    }
+
+    function renderizarListaModalTecnicos() {
+        const tecnicos = obtenerTecnicos();
+        const contenedor = document.getElementById("listaTecnicosModal");
+        contenedor.innerHTML = "";
+
+        if (tecnicos.length === 0) {
+            contenedor.innerHTML = '<p style="color: var(--text-muted); text-align: center; padding: 10px;">No hay técnicos registrados.</p>';
+            return;
+        }
+
+        tecnicos.forEach((t, index) => {
+            const div = document.createElement("div");
+            div.className = "tech-list-item";
+            div.innerHTML = `
+                <span><strong>${t}</strong></span>
+                <div class="tech-actions">
+                    <button class="action-btn" onclick="editarTecnico(${index})" title="Editar"><i class="fa-solid fa-pen-to-square"></i></button>
+                    <button class="action-btn" onclick="eliminarTecnico(${index})" title="Eliminar"><i class="fa-solid fa-trash"></i></button>
+                </div>
+            `;
+            contenedor.appendChild(div);
+        });
+    }
+
+    function agregarTecnico() {
+        const input = document.getElementById("nuevoTecnico");
+        const nombre = input.value.trim().toUpperCase();
+
+        if (!nombre) return alert("Escribe el nombre del técnico.");
+
+        const tecnicos = obtenerTecnicos();
+        if (tecnicos.includes(nombre)) return alert("Este técnico ya existe en la lista.");
+
+        tecnicos.push(nombre);
+        guardarTecnicos(tecnicos);
+        input.value = "";
+    }
+
+    function editarTecnico(index) {
+        const tecnicos = obtenerTecnicos();
+        const nuevoNombre = prompt("Modificar nombre del técnico:", tecnicos[index]);
+
+        if (nuevoNombre && nuevoNombre.trim() !== "") {
+            tecnicos[index] = nuevoNombre.trim().toUpperCase();
+            guardarTecnicos(tecnicos);
+        }
+    }
+
+    function eliminarTecnico(index) {
+        const tecnicos = obtenerTecnicos();
+        if (confirm(`¿Eliminar a ${tecnicos[index]} de la lista?`)) {
+            tecnicos.splice(index, 1);
+            guardarTecnicos(tecnicos);
+        }
+    }
+
     function obtenerRegistros() {
         return JSON.parse(localStorage.getItem('filtros_kaeser') || '[]');
     }
@@ -581,6 +757,8 @@
         });
     }
 
+    // Inicialización
+    cargarSelectorTecnicos();
     cargarTabla();
 </script>
 
