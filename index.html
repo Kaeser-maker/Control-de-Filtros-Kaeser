@@ -1,0 +1,588 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Kaeser Compresores - Control de Filtros</title>
+    <!-- Configuración PWA -->
+    <link rel="manifest" href="manifest.json">
+    <meta name="theme-color" content="#FFCC00">
+    <link rel="apple-touch-icon" href="https://cdn-icons-png.flaticon.com/512/924/924874.png">
+    
+    <!-- FontAwesome para Íconos Industriales -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <!-- Fuente Inter desde Google Fonts -->
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600;700;900&display=swap" rel="stylesheet">
+    <!-- Librería XLSX para Exportar a Excel -->
+    <script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js"></script>
+
+    <style>
+        :root {
+            --kaeser-yellow: #FFCC00;
+            --kaeser-yellow-hover: #E6B800;
+            --bg-dark: #0D1117;
+            --card-bg: #161B22;
+            --card-border: #30363D;
+            --text-main: #F0F6FC;
+            --text-muted: #8B949E;
+            --accent-red: #F85149;
+            --accent-amber: #D29922;
+            --accent-green: #3FB950;
+        }
+
+        * { box-sizing: border-box; margin: 0; padding: 0; font-family: 'Inter', sans-serif; }
+
+        body {
+            background-color: var(--bg-dark);
+            color: var(--text-main);
+            padding: 25px;
+            min-height: 100vh;
+        }
+
+        .container { max-width: 1200px; margin: 0 auto; }
+
+        /* Header Principal con Logo Oficial */
+        header {
+            background: #000000;
+            border-bottom: 4px solid var(--kaeser-yellow);
+            padding: 20px 30px;
+            border-radius: 12px;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            box-shadow: 0 10px 25px rgba(0,0,0,0.5);
+            margin-bottom: 25px;
+        }
+
+        .brand { display: flex; align-items: center; gap: 20px; }
+        
+        /* Logo Kaeser Estilizado */
+        .kaeser-logo-box {
+            background: #000000;
+            border: 2px solid #FFFFFF;
+            padding: 8px 16px;
+            border-radius: 4px;
+            text-align: center;
+            line-height: 1.1;
+            display: inline-block;
+        }
+
+        .kaeser-logo-box .brand-kaeser {
+            color: #FFFFFF;
+            font-size: 1.8rem;
+            font-weight: 900;
+            letter-spacing: 2px;
+            font-family: Arial, sans-serif;
+            text-transform: uppercase;
+        }
+
+        .kaeser-logo-box .brand-sub {
+            color: #FFFFFF;
+            font-size: 0.65rem;
+            font-weight: 700;
+            letter-spacing: 1.5px;
+            font-family: Arial, sans-serif;
+            text-transform: uppercase;
+            border-top: 1px solid #FFFFFF;
+            margin-top: 2px;
+            padding-top: 2px;
+        }
+
+        .brand-title h1 { font-size: 1.25rem; font-weight: 700; color: #FFF; }
+        .brand-title p { font-size: 0.85rem; color: var(--kaeser-yellow); font-weight: 600; }
+
+        /* Tarjetas de Resumen KPI */
+        .kpi-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+            gap: 20px;
+            margin-bottom: 25px;
+        }
+
+        .kpi-card {
+            background: var(--card-bg);
+            border: 1px solid var(--card-border);
+            border-radius: 12px;
+            padding: 20px;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.3);
+            transition: transform 0.2s ease, border-color 0.2s ease;
+        }
+
+        .kpi-card:hover {
+            transform: translateY(-3px);
+            border-color: var(--kaeser-yellow);
+        }
+
+        .kpi-data h3 { font-size: 0.8rem; color: var(--text-muted); font-weight: 600; text-transform: uppercase; margin-bottom: 5px; }
+        .kpi-data p { font-size: 1.8rem; font-weight: 800; color: #FFF; }
+
+        .kpi-icon {
+            width: 50px;
+            height: 50px;
+            border-radius: 10px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.4rem;
+        }
+
+        .icon-total { background: rgba(255, 204, 0, 0.15); color: var(--kaeser-yellow); }
+        .icon-ok { background: rgba(63, 185, 80, 0.15); color: var(--accent-green); }
+        .icon-warning { background: rgba(210, 153, 34, 0.15); color: var(--accent-amber); }
+        .icon-danger { background: rgba(248, 81, 73, 0.15); color: var(--accent-red); }
+
+        /* Contenedores Principales */
+        .main-card {
+            background: var(--card-bg);
+            border: 1px solid var(--card-border);
+            border-radius: 12px;
+            padding: 25px;
+            margin-bottom: 25px;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.3);
+        }
+
+        .card-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 20px;
+            border-bottom: 1px solid var(--card-border);
+            padding-bottom: 12px;
+            gap: 15px;
+            flex-wrap: wrap;
+        }
+
+        .card-header h2 { font-size: 1.1rem; font-weight: 700; display: flex; align-items: center; gap: 10px; }
+
+        /* Formulario */
+        .form-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+            gap: 18px;
+        }
+
+        .form-group { display: flex; flex-direction: column; gap: 6px; }
+        .form-group label { font-size: 0.85rem; font-weight: 600; color: var(--text-muted); }
+
+        .form-control {
+            background: #0D1117;
+            border: 1px solid var(--card-border);
+            color: #FFF;
+            padding: 12px;
+            border-radius: 8px;
+            font-size: 0.95rem;
+            outline: none;
+            transition: border-color 0.2s ease, box-shadow 0.2s ease;
+        }
+
+        /* Estilo especial para que la casilla de fecha abra el calendario al hacer clic */
+        input[type="date"].form-control {
+            cursor: pointer;
+            color-scheme: dark;
+        }
+
+        /* Cambia el ícono del calendario a amarillo Kaeser */
+        input[type="date"]::-webkit-calendar-picker-indicator {
+            filter: invert(80%) sepia(85%) saturate(1200%) hue-rotate(350deg) brightness(105%) contrast(105%);
+            cursor: pointer;
+            font-size: 1.1rem;
+        }
+
+        .form-control:focus {
+            border-color: var(--kaeser-yellow);
+            box-shadow: 0 0 0 3px rgba(255, 204, 0, 0.2);
+        }
+
+        /* Botones */
+        .btn {
+            padding: 12px 20px;
+            border-radius: 8px;
+            font-weight: 700;
+            border: none;
+            cursor: pointer;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            gap: 8px;
+            font-size: 0.95rem;
+            transition: all 0.2s ease;
+        }
+
+        .btn-kaeser {
+            background: var(--kaeser-yellow);
+            color: #000;
+            margin-top: 20px;
+            width: 100%;
+        }
+
+        .btn-kaeser:hover { background: var(--kaeser-yellow-hover); transform: translateY(-1px); }
+
+        .btn-excel {
+            background: var(--kaeser-yellow);
+            color: #000;
+        }
+
+        .btn-excel:hover { background: var(--kaeser-yellow-hover); }
+
+        /* Tabla Estilizada */
+        .table-responsive { overflow-x: auto; margin-top: 10px; }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            text-align: left;
+        }
+
+        th {
+            background: #0D1117;
+            color: var(--text-muted);
+            font-size: 0.8rem;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            padding: 14px 16px;
+            border-bottom: 1px solid var(--card-border);
+        }
+
+        td {
+            padding: 16px;
+            border-bottom: 1px solid var(--card-border);
+            font-size: 0.9rem;
+            vertical-align: middle;
+        }
+
+        tbody tr:hover { background: rgba(255, 255, 255, 0.02); }
+
+        /* Badges de Estado */
+        .badge {
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+            padding: 6px 12px;
+            border-radius: 20px;
+            font-size: 0.8rem;
+            font-weight: 600;
+        }
+
+        .badge-ok { background: rgba(63, 185, 80, 0.15); color: var(--accent-green); border: 1px solid rgba(63, 185, 80, 0.3); }
+        .badge-warning { background: rgba(210, 153, 34, 0.15); color: var(--accent-amber); border: 1px solid rgba(210, 153, 34, 0.3); }
+        .badge-danger { background: rgba(248, 81, 73, 0.15); color: var(--accent-red); border: 1px solid rgba(248, 81, 73, 0.3); }
+
+        .action-btn {
+            background: transparent;
+            border: none;
+            color: var(--text-muted);
+            cursor: pointer;
+            font-size: 1.1rem;
+            transition: color 0.2s ease;
+        }
+
+        .action-btn:hover { color: var(--accent-red); }
+    </style>
+</head>
+<body>
+
+<div class="container">
+    
+    <!-- Encabezado Kaeser Compresores -->
+    <header>
+        <div class="brand">
+            <div class="kaeser-logo-box">
+                <div class="brand-kaeser">KAESER</div>
+                <div class="brand-sub">COMPRESORES ®</div>
+            </div>
+            <div class="brand-title">
+                <h1>SISTEMA DE CONTROL DE FILTROS DE LÍNEA</h1>
+                <p><i class="fa-solid fa-circle" style="font-size: 0.5rem;"></i> Monitoreo de Mantenimiento & Trazabilidad</p>
+            </div>
+        </div>
+        <div>
+            <i class="fa-solid fa-gears" style="font-size: 2.2rem; color: var(--kaeser-yellow);"></i>
+        </div>
+    </header>
+
+    <!-- Indicadores KPI -->
+    <div class="kpi-grid">
+        <div class="kpi-card">
+            <div class="kpi-data">
+                <h3>Total Registrados</h3>
+                <p id="kpi-total">0</p>
+            </div>
+            <div class="kpi-icon icon-total"><i class="fa-solid fa-filter"></i></div>
+        </div>
+        <div class="kpi-card">
+            <div class="kpi-data">
+                <h3>Filtros Al Día</h3>
+                <p id="kpi-ok">0</p>
+            </div>
+            <div class="kpi-icon icon-ok"><i class="fa-solid fa-circle-check"></i></div>
+        </div>
+        <div class="kpi-card">
+            <div class="kpi-data">
+                <h3>Próximos (15 Días)</h3>
+                <p id="kpi-warning">0</p>
+            </div>
+            <div class="kpi-icon icon-warning"><i class="fa-solid fa-triangle-exclamation"></i></div>
+        </div>
+        <div class="kpi-card">
+            <div class="kpi-data">
+                <h3>Vencidos</h3>
+                <p id="kpi-danger">0</p>
+            </div>
+            <div class="kpi-icon icon-danger"><i class="fa-solid fa-circle-xmark"></i></div>
+        </div>
+    </div>
+
+    <!-- Formulario -->
+    <div class="main-card">
+        <div class="card-header">
+            <h2><i class="fa-solid fa-pen-to-square" style="color: var(--kaeser-yellow);"></i> Registrar Cambio de Elemento Filtrante</h2>
+        </div>
+        <form id="filterForm">
+            <div class="form-grid">
+                <div class="form-group">
+                    <label>Cliente / Empresa</label>
+                    <input type="text" id="cliente" class="form-control" placeholder="Ej: Industria Textil S.A." required>
+                </div>
+                <div class="form-group">
+                    <label>Planta / Ubicación</label>
+                    <input type="text" id="planta" class="form-control" placeholder="Ej: Planta 2 - Compresor B" required>
+                </div>
+                <div class="form-group">
+                    <label>Modelo Carcasa</label>
+                    <input type="text" id="tipo_filtro" class="form-control" placeholder="Ej: Kaeser FILTER F18 KEA" required>
+                </div>
+                <div class="form-group">
+                    <label>Elemento Filtrante</label>
+                    <input type="text" id="elemento" class="form-control" placeholder="Ej: Elemento E-B 18" required>
+                </div>
+                
+                <!-- Campo de fecha con despliegue automático de calendario -->
+                <div class="form-group">
+                    <label>Fecha de Último Cambio</label>
+                    <input type="date" id="fecha_ultimo" class="form-control" required onclick="this.showPicker()">
+                </div>
+                
+                <!-- Desplegable para seleccionar el técnico -->
+                <div class="form-group">
+                    <label>Técnico Responsable</label>
+                    <select id="tecnico" class="form-control" required>
+                        <option value="" disabled selected>Seleccione un técnico...</option>
+                        <option value="YEFERSON UTIMA">YEFERSON UTIMA</option>
+                        <option value="CARLOS MENDOZA">CARLOS MENDOZA</option>
+                        <option value="JUAN PÉREZ">JUAN PÉREZ</option>
+                        <option value="ROBERTO GÓMEZ">ROBERTO GÓMEZ</option>
+                        <option value="MARÍA RODRÍGUEZ">MARÍA RODRÍGUEZ</option>
+                    </select>
+                </div>
+            </div>
+            <button type="submit" class="btn btn-kaeser">
+                <i class="fa-solid fa-plus"></i> Guardar Registro en Sistema
+            </button>
+        </form>
+    </div>
+
+    <!-- Historial con Buscador Incorporado -->
+    <div class="main-card">
+        <div class="card-header">
+            <h2><i class="fa-solid fa-list-check" style="color: var(--kaeser-yellow);"></i> Historial y Próximos Cambios</h2>
+            
+            <div style="display: flex; gap: 12px; align-items: center; flex: 1; max-width: 500px; justify-content: flex-end;">
+                <!-- Campo de búsqueda en tiempo real -->
+                <div style="position: relative; width: 100%; max-width: 280px;">
+                    <i class="fa-solid fa-magnifying-glass" style="position: absolute; left: 12px; top: 50%; transform: translateY(-50%); color: var(--text-muted);"></i>
+                    <input 
+                        type="text" 
+                        id="buscadorCliente" 
+                        class="form-control" 
+                        placeholder="Buscar por cliente o planta..." 
+                        onkeyup="filtrarTabla()"
+                        style="padding-left: 36px; height: 42px; font-size: 0.85rem;"
+                    >
+                </div>
+
+                <!-- Botón Exportar Excel -->
+                <button class="btn btn-excel" onclick="exportarExcel()" style="white-space: nowrap; height: 42px;">
+                    <i class="fa-solid fa-file-excel"></i> Exportar a Excel
+                </button>
+            </div>
+        </div>
+        
+        <div class="table-responsive">
+            <table id="tablaHistorial">
+                <thead>
+                    <tr>
+                        <th>Cliente / Planta</th>
+                        <th>Carcasa / Elemento</th>
+                        <th>Último Cambio</th>
+                        <th>Próximo Cambio</th>
+                        <th>Técnico</th>
+                        <th>Estado</th>
+                        <th>Acción</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <!-- Datos dinámicos -->
+                </tbody>
+            </table>
+        </div>
+    </div>
+
+</div>
+
+<script>
+    function obtenerRegistros() {
+        return JSON.parse(localStorage.getItem('filtros_kaeser') || '[]');
+    }
+
+    function actualizarKPIs(registros) {
+        let ok = 0, warning = 0, danger = 0;
+        const hoy = new Date();
+
+        registros.forEach(r => {
+            const prox = new Date(r.proximo);
+            const dias = Math.ceil((prox - hoy) / (1000 * 60 * 60 * 24));
+
+            if (dias < 0) danger++;
+            else if (dias <= 15) warning++;
+            else ok++;
+        });
+
+        document.getElementById('kpi-total').textContent = registros.length;
+        document.getElementById('kpi-ok').textContent = ok;
+        document.getElementById('kpi-warning').textContent = warning;
+        document.getElementById('kpi-danger').textContent = danger;
+    }
+
+    function cargarTabla() {
+        const registros = obtenerRegistros();
+        actualizarKPIs(registros);
+        
+        const tbody = document.querySelector("#tablaHistorial tbody");
+        tbody.innerHTML = "";
+
+        if(registros.length === 0) {
+            tbody.innerHTML = `<tr><td colspan="7" style="text-align:center; color: var(--text-muted); padding: 30px;">
+                No hay registros guardados. Utiliza el formulario superior para añadir el primer filtro.
+            </td></tr>`;
+            return;
+        }
+
+        registros.forEach((r, index) => {
+            const hoy = new Date();
+            const prox = new Date(r.proximo);
+            const diasRestantes = Math.ceil((prox - hoy) / (1000 * 60 * 60 * 24));
+
+            let badgeHtml = '';
+            if (diasRestantes < 0) {
+                badgeHtml = `<span class="badge badge-danger"><i class="fa-solid fa-triangle-exclamation"></i> Vencido (${Math.abs(diasRestantes)}d)</span>`;
+            } else if (diasRestantes <= 15) {
+                badgeHtml = `<span class="badge badge-warning"><i class="fa-solid fa-clock"></i> Por Vencer (${diasRestantes}d)</span>`;
+            } else {
+                badgeHtml = `<span class="badge badge-ok"><i class="fa-solid fa-check"></i> Al Día</span>`;
+            }
+
+            const tr = document.createElement("tr");
+            tr.innerHTML = `
+                <td><strong>${r.cliente}</strong><br><small style="color:var(--text-muted);">${r.planta}</small></td>
+                <td>${r.filtro}<br><small style="color:var(--text-muted);">Elem: ${r.elemento}</small></td>
+                <td>${r.ultimo}</td>
+                <td><strong>${r.proximo}</strong></td>
+                <td>${r.tecnico}</td>
+                <td>${badgeHtml}</td>
+                <td>
+                    <button class="action-btn" onclick="eliminarRegistro(${index})" title="Eliminar registro">
+                        <i class="fa-solid fa-trash-can"></i>
+                    </button>
+                </td>
+            `;
+            tbody.appendChild(tr);
+        });
+
+        filtrarTabla();
+    }
+
+    function filtrarTabla() {
+        const textoBusqueda = document.getElementById("buscadorCliente").value.toLowerCase().trim();
+        const filas = document.querySelectorAll("#tablaHistorial tbody tr");
+
+        filas.forEach(fila => {
+            const columnaCliente = fila.children[0] ? fila.children[0].textContent.toLowerCase() : "";
+            
+            if (columnaCliente.includes(textoBusqueda)) {
+                fila.style.display = "";
+            } else {
+                fila.style.display = "none";
+            }
+        });
+    }
+
+    document.getElementById("filterForm").addEventListener("submit", function(e) {
+        e.preventDefault();
+        const ultimo = new Date(document.getElementById("fecha_ultimo").value);
+        const proximo = new Date(ultimo);
+        proximo.setDate(proximo.getDate() + 360);
+
+        const nuevoRegistro = {
+            cliente: document.getElementById("cliente").value,
+            planta: document.getElementById("planta").value,
+            filtro: document.getElementById("tipo_filtro").value,
+            elemento: document.getElementById("elemento").value,
+            ultimo: document.getElementById("fecha_ultimo").value,
+            proximo: proximo.toISOString().split('T')[0],
+            tecnico: document.getElementById("tecnico").value
+        };
+
+        const registros = obtenerRegistros();
+        registros.unshift(nuevoRegistro);
+        localStorage.setItem('filtros_kaeser', JSON.stringify(registros));
+
+        this.reset();
+        cargarTabla();
+    });
+
+    function eliminarRegistro(index) {
+        if(confirm("¿Estás seguro de eliminar este registro del historial?")) {
+            const registros = obtenerRegistros();
+            registros.splice(index, 1);
+            localStorage.setItem('filtros_kaeser', JSON.stringify(registros));
+            cargarTabla();
+        }
+    }
+
+    function exportarExcel() {
+        const registros = obtenerRegistros();
+        if (registros.length === 0) return alert("No hay datos para exportar.");
+
+        const dataExcel = registros.map(r => ({
+            "Cliente": r.cliente,
+            "Planta": r.planta,
+            "Tipo Filtro": r.filtro,
+            "Elemento": r.elemento,
+            "Último Cambio": r.ultimo,
+            "Próximo Cambio": r.proximo,
+            "Técnico": r.tecnico
+        }));
+
+        const worksheet = XLSX.utils.json_to_sheet(dataExcel);
+        const workbook = XLSX.utils.book_new();
+        XLSX.utils.book_append_sheet(workbook, worksheet, "Filtros Kaeser");
+        XLSX.writeFile(workbook, "reporte_filtros_kaeser.xlsx");
+    }
+
+    // Registrar Service Worker para PWA / Uso Offline
+    if ('serviceWorker' in navigator) {
+        window.addEventListener('load', () => {
+            navigator.serviceWorker.register('./sw.js')
+                .then(reg => console.log('PWA Service Worker listo:', reg.scope))
+                .catch(err => console.log('Error al registrar Service Worker:', err));
+        });
+    }
+
+    cargarTabla();
+</script>
+
+</body>
+</html>
