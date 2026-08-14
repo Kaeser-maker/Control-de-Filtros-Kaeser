@@ -357,7 +357,7 @@
             </div>
             <div class="brand-title">
                 <h1>CONTROL DE FILTROS DE LÍNEA</h1>
-                <p><i class="fa-solid fa-circle" style="font-size: 0.4rem;"></i> Monitoreo en Tiempo Real</p>
+                <p><i class="fa-solid fa-circle" style="font-size: 0.4rem;"></i> Monitoreo Global en Tiempo Real</p>
             </div>
         </div>
         <div>
@@ -430,7 +430,7 @@
                     <label>Técnico Responsable</label>
                     <div style="display: flex; gap: 8px;">
                         <select id="tecnico" class="form-control" required style="flex: 1;">
-                            <!-- Opciones -->
+                            <!-- Opciones vacías de inicio -->
                         </select>
                         <button type="button" class="btn-manage-techs" onclick="abrirModalTecnicos()" title="Administrar Técnicos">
                             <i class="fa-solid fa-gear"></i>
@@ -490,7 +490,7 @@
 
 </div>
 
-<!-- Modal -->
+<!-- Modal para Técnicos -->
 <div id="modalTecnicos" class="modal-overlay">
     <div class="modal-content">
         <div class="modal-header">
@@ -521,34 +521,38 @@
     const supabaseClient = supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
 
     let registrosGlobales = [];
+    let tecnicosGlobales = [];
 
-    // Técnicos
-    const tecnicosPredeterminados = ["YEFERSON UTIMA", "CARLOS MENDOZA", "JUAN PÉREZ", "ROBERTO GÓMEZ", "MARÍA RODRÍGUEZ"];
+    // --- CARGAR TÉCNICOS EN TIEMPO REAL DESDE SUPABASE ---
+    async function cargarTecnicosDesdeSupabase() {
+        const { data, error } = await supabaseClient
+            .from('tecnicos')
+            .select('*')
+            .order('nombre', { ascending: true });
 
-    function obtenerTecnicos() {
-        return JSON.parse(localStorage.getItem('tecnicos_kaeser')) || tecnicosPredeterminados;
-    }
+        if (error) {
+            console.error("Error al obtener técnicos:", error);
+            return;
+        }
 
-    function guardarTecnicosLocal(lista) {
-        localStorage.setItem('tecnicos_kaeser', JSON.stringify(lista));
+        tecnicosGlobales = data || [];
         cargarSelectorTecnicos();
         renderizarListaModalTecnicos();
     }
 
     function cargarSelectorTecnicos() {
-        const tecnicos = obtenerTecnicos();
         const select = document.getElementById("tecnico");
         const valorSeleccionado = select.value;
 
         select.innerHTML = '<option value="" disabled selected>Seleccione un técnico...</option>';
-        tecnicos.forEach(t => {
+        tecnicosGlobales.forEach(t => {
             const option = document.createElement("option");
-            option.value = t;
-            option.textContent = t;
+            option.value = t.nombre;
+            option.textContent = t.nombre;
             select.appendChild(option);
         });
 
-        if (tecnicos.includes(valorSeleccionado)) {
+        if (tecnicosGlobales.some(t => t.nombre === valorSeleccionado)) {
             select.value = valorSeleccionado;
         }
     }
@@ -563,62 +567,74 @@
     }
 
     function renderizarListaModalTecnicos() {
-        const tecnicos = obtenerTecnicos();
         const contenedor = document.getElementById("listaTecnicosModal");
         contenedor.innerHTML = "";
 
-        if (tecnicos.length === 0) {
+        if (tecnicosGlobales.length === 0) {
             contenedor.innerHTML = '<p style="color: var(--text-muted); text-align: center; padding: 10px;">No hay técnicos registrados.</p>';
             return;
         }
 
-        tecnicos.forEach((t, index) => {
+        tecnicosGlobales.forEach((t) => {
             const div = document.createElement("div");
             div.className = "tech-list-item";
             div.innerHTML = `
-                <span><strong>${t}</strong></span>
+                <span><strong>${t.nombre}</strong></span>
                 <div class="tech-actions">
-                    <button class="action-btn" onclick="editarTecnico(${index})" title="Editar"><i class="fa-solid fa-pen-to-square"></i></button>
-                    <button class="action-btn" onclick="eliminarTecnico(${index})" title="Eliminar"><i class="fa-solid fa-trash"></i></button>
+                    <button class="action-btn" onclick="editarTecnico(${t.id}, '${t.nombre}')" title="Editar"><i class="fa-solid fa-pen-to-square"></i></button>
+                    <button class="action-btn" onclick="eliminarTecnico(${t.id}, '${t.nombre}')" title="Eliminar"><i class="fa-solid fa-trash"></i></button>
                 </div>
             `;
             contenedor.appendChild(div);
         });
     }
 
-    function agregarTecnico() {
+    async function agregarTecnico() {
         const input = document.getElementById("nuevoTecnico");
         const nombre = input.value.trim().toUpperCase();
 
         if (!nombre) return alert("Escribe el nombre del técnico.");
 
-        const tecnicos = obtenerTecnicos();
-        if (tecnicos.includes(nombre)) return alert("Este técnico ya existe en la lista.");
+        if (tecnicosGlobales.some(t => t.nombre === nombre)) {
+            return alert("Este técnico ya existe en la lista.");
+        }
 
-        tecnicos.push(nombre);
-        guardarTecnicosLocal(tecnicos);
-        input.value = "";
-    }
+        const { error } = await supabaseClient
+            .from('tecnicos')
+            .insert([{ nombre: nombre }]);
 
-    function editarTecnico(index) {
-        const tecnicos = obtenerTecnicos();
-        const nuevoNombre = prompt("Modificar nombre del técnico:", tecnicos[index]);
-
-        if (nuevoNombre && nuevoNombre.trim() !== "") {
-            tecnicos[index] = nuevoNombre.trim().toUpperCase();
-            guardarTecnicosLocal(tecnicos);
+        if (error) {
+            alert("Error al guardar técnico: " + error.message);
+        } else {
+            input.value = "";
         }
     }
 
-    function eliminarTecnico(index) {
-        const tecnicos = obtenerTecnicos();
-        if (confirm(`¿Eliminar a ${tecnicos[index]} de la lista?`)) {
-            tecnicos.splice(index, 1);
-            guardarTecnicosLocal(tecnicos);
+    async function editarTecnico(id, nombreActual) {
+        const nuevoNombre = prompt("Modificar nombre del técnico:", nombreActual);
+
+        if (nuevoNombre && nuevoNombre.trim() !== "" && nuevoNombre.trim().toUpperCase() !== nombreActual) {
+            const { error } = await supabaseClient
+                .from('tecnicos')
+                .update({ nombre: nuevoNombre.trim().toUpperCase() })
+                .eq('id', id);
+
+            if (error) alert("Error al editar técnico: " + error.message);
         }
     }
 
-    // --- CARGAR DATOS EN TIEMPO REAL ---
+    async function eliminarTecnico(id, nombre) {
+        if (confirm(`¿Eliminar a ${nombre} de la lista en tiempo real?`)) {
+            const { error } = await supabaseClient
+                .from('tecnicos')
+                .delete()
+                .eq('id', id);
+
+            if (error) alert("Error al eliminar técnico: " + error.message);
+        }
+    }
+
+    // --- CARGAR DATOS DE FILTROS EN TIEMPO REAL ---
     async function cargarDatosDesdeSupabase() {
         const { data, error } = await supabaseClient
             .from('filtros')
@@ -634,15 +650,23 @@
         cargarTabla(registrosGlobales);
     }
 
-    // Escuchar cambios instantáneos desde cualquier dispositivo
+    // Escuchar cambios instantáneos de FILTROS
     supabaseClient
-        .channel('schema-db-changes')
+        .channel('schema-filtros-changes')
         .on(
             'postgres_changes',
             { event: '*', schema: 'public', table: 'filtros' },
-            () => {
-                cargarDatosDesdeSupabase();
-            }
+            () => { cargarDatosDesdeSupabase(); }
+        )
+        .subscribe();
+
+    // Escuchar cambios instantáneos de TÉCNICOS
+    supabaseClient
+        .channel('schema-tecnicos-changes')
+        .on(
+            'postgres_changes',
+            { event: '*', schema: 'public', table: 'tecnicos' },
+            () => { cargarTecnicosDesdeSupabase(); }
         )
         .subscribe();
 
@@ -786,7 +810,7 @@
     }
 
     // Inicialización
-    cargarSelectorTecnicos();
+    cargarTecnicosDesdeSupabase();
     cargarDatosDesdeSupabase();
 </script>
 
