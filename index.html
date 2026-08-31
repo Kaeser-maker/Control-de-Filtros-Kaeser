@@ -172,6 +172,10 @@
             transition: border-color 0.2s ease, box-shadow 0.2s ease;
         }
 
+        .uppercase-input {
+            text-transform: uppercase;
+        }
+
         input[type="date"].form-control {
             cursor: pointer;
             color-scheme: dark;
@@ -413,8 +417,8 @@
                     <input type="text" id="planta" class="form-control" placeholder="Ej: Planta 2 - Compresor B" required>
                 </div>
                 <div class="form-group">
-                    <label>Item / Identificador</label>
-                    <input type="text" id="item" class="form-control" placeholder="Ej: Ítem 01 / Compresor #2" required>
+                    <label>N°Serie</label>
+                    <input type="text" id="item" class="form-control uppercase-input" placeholder="Ej: SN-984210" oninput="this.value = this.value.toUpperCase()" required>
                 </div>
                 <div class="form-group">
                     <label>Modelo Carcasa</label>
@@ -476,7 +480,7 @@
             <table id="tablaHistorial">
                 <thead>
                     <tr>
-                        <th>Item</th>
+                        <th>N°Serie</th>
                         <th>Cliente / Planta</th>
                         <th>Carcasa / Elemento</th>
                         <th>Último Cambio</th>
@@ -722,7 +726,7 @@
 
             const tr = document.createElement("tr");
             tr.innerHTML = `
-                <td><strong>${r.item || 'N/A'}</strong></td>
+                <td><strong>${r.item ? r.item.toUpperCase() : 'N/A'}</strong></td>
                 <td><strong>${r.cliente}</strong><br><small style="color:var(--text-muted);">${r.planta}</small></td>
                 <td>${r.filtro}<br><small style="color:var(--text-muted);">Elem: ${r.elemento}</small></td>
                 <td>${r.ultimo}</td>
@@ -765,7 +769,7 @@
         const nuevoRegistro = {
             cliente: document.getElementById("cliente").value,
             planta: document.getElementById("planta").value,
-            item: document.getElementById("item").value,
+            item: document.getElementById("item").value.toUpperCase().trim(),
             filtro: document.getElementById("tipo_filtro").value,
             elemento: document.getElementById("elemento").value,
             ultimo: document.getElementById("fecha_ultimo").value,
@@ -801,7 +805,7 @@
         if (registrosGlobales.length === 0) return alert("No hay datos para exportar.");
 
         const dataExcel = registrosGlobales.map(r => ({
-            "Item": r.item || 'N/A',
+            "N°Serie": r.item ? r.item.toUpperCase() : 'N/A',
             "Cliente": r.cliente,
             "Planta": r.planta,
             "Tipo Filtro": r.filtro,
@@ -824,6 +828,3 @@
 
 </body>
 </html>
-```eof
-
-Aquí tienes el archivo `index.html` completo con el nuevo campo **Item / Identificador** integrado en la interfaz, formulario, tabla e historial con soporte en tiempo real y exportación a Excel.
