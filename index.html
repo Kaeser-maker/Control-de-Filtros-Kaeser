@@ -291,7 +291,8 @@
             padding: 8px;
         }
 
-        .action-btn:hover { color: var(--accent-red); }
+        .action-btn:hover { color: var(--kaeser-yellow); }
+        .action-btn-danger:hover { color: var(--accent-red); }
 
         .modal-overlay {
             display: none;
@@ -309,10 +310,12 @@
             background: var(--card-bg);
             border: 1px solid var(--card-border);
             width: 100%;
-            max-width: 480px;
+            max-width: 550px;
             border-radius: 12px;
             padding: 20px;
             box-shadow: 0 10px 30px rgba(0,0,0,0.6);
+            max-height: 90vh;
+            overflow-y: auto;
         }
 
         .modal-header {
@@ -497,6 +500,55 @@
 
 </div>
 
+<!-- Modal para Editar Registro -->
+<div id="modalEditarRegistro" class="modal-overlay">
+    <div class="modal-content">
+        <div class="modal-header">
+            <h3><i class="fa-solid fa-pen-to-square" style="color: var(--kaeser-yellow);"></i> Editar Registro</h3>
+            <button class="action-btn" onclick="cerrarModalEditar()"><i class="fa-solid fa-xmark"></i></button>
+        </div>
+        
+        <form id="formEditarRegistro">
+            <input type="hidden" id="edit_id">
+            <div class="form-grid" style="grid-template-columns: 1fr;">
+                <div class="form-group">
+                    <label>Cliente / Empresa</label>
+                    <input type="text" id="edit_cliente" class="form-control" required>
+                </div>
+                <div class="form-group">
+                    <label>Planta / Ubicación</label>
+                    <input type="text" id="edit_planta" class="form-control" required>
+                </div>
+                <div class="form-group">
+                    <label>N°Serie</label>
+                    <input type="text" id="edit_item" class="form-control" required>
+                </div>
+                <div class="form-group">
+                    <label>Modelo Carcasa</label>
+                    <input type="text" id="edit_tipo_filtro" class="form-control" required>
+                </div>
+                <div class="form-group">
+                    <label>Elemento Filtrante</label>
+                    <input type="text" id="edit_elemento" class="form-control" required>
+                </div>
+                <div class="form-group">
+                    <label>Fecha de Último Cambio</label>
+                    <input type="date" id="edit_fecha_ultimo" class="form-control" required onclick="this.showPicker()">
+                </div>
+                <div class="form-group">
+                    <label>Técnico Responsable</label>
+                    <select id="edit_tecnico" class="form-control" required>
+                        <!-- Opciones de técnicos -->
+                    </select>
+                </div>
+            </div>
+            <button type="submit" class="btn btn-kaeser" style="margin-top: 20px;">
+                <i class="fa-solid fa-floppy-disk"></i> Guardar Cambios
+            </button>
+        </form>
+    </div>
+</div>
+
 <!-- Modal para Técnicos -->
 <div id="modalTecnicos" class="modal-overlay">
     <div class="modal-content">
@@ -549,18 +601,21 @@
 
     function cargarSelectorTecnicos() {
         const select = document.getElementById("tecnico");
+        const selectEdit = document.getElementById("edit_tecnico");
         const valorSeleccionado = select.value;
+        const valorEditSeleccionado = selectEdit.value;
 
-        select.innerHTML = '<option value="" disabled selected>Seleccione un técnico...</option>';
-        tecnicosGlobales.forEach(t => {
-            const option = document.createElement("option");
-            option.value = t.nombre;
-            option.textContent = t.nombre;
-            select.appendChild(option);
-        });
+        const optionsHtml = '<option value="" disabled selected>Seleccione un técnico...</option>' + 
+            tecnicosGlobales.map(t => `<option value="${t.nombre}">${t.nombre}</option>`).join('');
+
+        select.innerHTML = optionsHtml;
+        selectEdit.innerHTML = optionsHtml;
 
         if (tecnicosGlobales.some(t => t.nombre === valorSeleccionado)) {
             select.value = valorSeleccionado;
+        }
+        if (tecnicosGlobales.some(t => t.nombre === valorEditSeleccionado)) {
+            selectEdit.value = valorEditSeleccionado;
         }
     }
 
@@ -589,7 +644,7 @@
                 <span><strong>${t.nombre}</strong></span>
                 <div class="tech-actions">
                     <button class="action-btn" onclick="editarTecnico(${t.id}, '${t.nombre}')" title="Editar"><i class="fa-solid fa-pen-to-square"></i></button>
-                    <button class="action-btn" onclick="eliminarTecnico(${t.id}, '${t.nombre}')" title="Eliminar"><i class="fa-solid fa-trash"></i></button>
+                    <button class="action-btn action-btn-danger" onclick="eliminarTecnico(${t.id}, '${t.nombre}')" title="Eliminar"><i class="fa-solid fa-trash"></i></button>
                 </div>
             `;
             contenedor.appendChild(div);
@@ -732,7 +787,10 @@
                 <td>${r.tecnico}</td>
                 <td>${badgeHtml}</td>
                 <td>
-                    <button class="action-btn" onclick="eliminarRegistro(${r.id})" title="Eliminar registro">
+                    <button class="action-btn" onclick="abrirModalEditar(${r.id})" title="Editar registro">
+                        <i class="fa-solid fa-pen-to-square"></i>
+                    </button>
+                    <button class="action-btn action-btn-danger" onclick="eliminarRegistro(${r.id})" title="Eliminar registro">
                         <i class="fa-solid fa-trash-can"></i>
                     </button>
                 </td>
@@ -742,6 +800,56 @@
 
         filtrarTabla();
     }
+
+    function abrirModalEditar(id) {
+        const registro = registrosGlobales.find(r => r.id === id);
+        if (!registro) return;
+
+        document.getElementById("edit_id").value = registro.id;
+        document.getElementById("edit_cliente").value = registro.cliente;
+        document.getElementById("edit_planta").value = registro.planta;
+        document.getElementById("edit_item").value = registro.item || '';
+        document.getElementById("edit_tipo_filtro").value = registro.filtro;
+        document.getElementById("edit_elemento").value = registro.elemento;
+        document.getElementById("edit_fecha_ultimo").value = registro.ultimo;
+        document.getElementById("edit_tecnico").value = registro.tecnico;
+
+        document.getElementById("modalEditarRegistro").style.display = "flex";
+    }
+
+    function cerrarModalEditar() {
+        document.getElementById("modalEditarRegistro").style.display = "none";
+    }
+
+    document.getElementById("formEditarRegistro").addEventListener("submit", async function(e) {
+        e.preventDefault();
+        const id = document.getElementById("edit_id").value;
+        const ultimo = new Date(document.getElementById("edit_fecha_ultimo").value);
+        const proximo = new Date(ultimo);
+        proximo.setDate(proximo.getDate() + 360);
+
+        const registroActualizado = {
+            cliente: document.getElementById("edit_cliente").value,
+            planta: document.getElementById("edit_planta").value,
+            item: document.getElementById("edit_item").value.trim(),
+            filtro: document.getElementById("edit_tipo_filtro").value,
+            elemento: document.getElementById("edit_elemento").value,
+            ultimo: document.getElementById("edit_fecha_ultimo").value,
+            proximo: proximo.toISOString().split('T')[0],
+            tecnico: document.getElementById("edit_tecnico").value
+        };
+
+        const { error } = await supabaseClient
+            .from('filtros')
+            .update(registroActualizado)
+            .eq('id', id);
+
+        if (error) {
+            alert("Error al actualizar: " + error.message);
+        } else {
+            cerrarModalEditar();
+        }
+    });
 
     function filtrarTabla() {
         const textoBusqueda = document.getElementById("buscadorCliente").value.toLowerCase().trim();
