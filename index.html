@@ -246,7 +246,7 @@
             width: 100%;
             border-collapse: collapse;
             text-align: left;
-            min-width: 650px;
+            min-width: 750px;
         }
 
         th {
@@ -413,6 +413,10 @@
                     <input type="text" id="planta" class="form-control" placeholder="Ej: Planta 2 - Compresor B" required>
                 </div>
                 <div class="form-group">
+                    <label>Item / Identificador</label>
+                    <input type="text" id="item" class="form-control" placeholder="Ej: Ítem 01 / Compresor #2" required>
+                </div>
+                <div class="form-group">
                     <label>Modelo Carcasa</label>
                     <input type="text" id="tipo_filtro" class="form-control" placeholder="Ej: Kaeser FILTER F18 KEA" required>
                 </div>
@@ -472,6 +476,7 @@
             <table id="tablaHistorial">
                 <thead>
                     <tr>
+                        <th>Item</th>
                         <th>Cliente / Planta</th>
                         <th>Carcasa / Elemento</th>
                         <th>Último Cambio</th>
@@ -695,7 +700,7 @@
         tbody.innerHTML = "";
 
         if(registros.length === 0) {
-            tbody.innerHTML = `<tr><td colspan="7" style="text-align:center; color: var(--text-muted); padding: 25px;">
+            tbody.innerHTML = `<tr><td colspan="8" style="text-align:center; color: var(--text-muted); padding: 25px;">
                 No hay registros guardados en la base de datos.
             </td></tr>`;
             return;
@@ -717,6 +722,7 @@
 
             const tr = document.createElement("tr");
             tr.innerHTML = `
+                <td><strong>${r.item || 'N/A'}</strong></td>
                 <td><strong>${r.cliente}</strong><br><small style="color:var(--text-muted);">${r.planta}</small></td>
                 <td>${r.filtro}<br><small style="color:var(--text-muted);">Elem: ${r.elemento}</small></td>
                 <td>${r.ultimo}</td>
@@ -740,7 +746,7 @@
         const filas = document.querySelectorAll("#tablaHistorial tbody tr");
 
         filas.forEach(fila => {
-            const columnaCliente = fila.children[0] ? fila.children[0].textContent.toLowerCase() : "";
+            const columnaCliente = fila.children[1] ? fila.children[1].textContent.toLowerCase() : "";
             
             if (columnaCliente.includes(textoBusqueda)) {
                 fila.style.display = "";
@@ -759,6 +765,7 @@
         const nuevoRegistro = {
             cliente: document.getElementById("cliente").value,
             planta: document.getElementById("planta").value,
+            item: document.getElementById("item").value,
             filtro: document.getElementById("tipo_filtro").value,
             elemento: document.getElementById("elemento").value,
             ultimo: document.getElementById("fecha_ultimo").value,
@@ -794,6 +801,7 @@
         if (registrosGlobales.length === 0) return alert("No hay datos para exportar.");
 
         const dataExcel = registrosGlobales.map(r => ({
+            "Item": r.item || 'N/A',
             "Cliente": r.cliente,
             "Planta": r.planta,
             "Tipo Filtro": r.filtro,
@@ -816,3 +824,6 @@
 
 </body>
 </html>
+```eof
+
+Aquí tienes el archivo `index.html` completo con el nuevo campo **Item / Identificador** integrado en la interfaz, formulario, tabla e historial con soporte en tiempo real y exportación a Excel.
