@@ -582,6 +582,15 @@
     let registrosGlobales = [];
     let tecnicosGlobales = [];
 
+    // --- FUNCIÓN PARA CALCULAR 1 AÑO EXACTO (SIN ERRORES DE DÍAS) ---
+    function calcularFechaUnAnio(fechaTexto) {
+        const partes = fechaTexto.split('-'); // YYYY-MM-DD
+        const ano = parseInt(partes[0], 10) + 1;
+        const mes = partes[1];
+        const dia = partes[2];
+        return `${ano}-${mes}-${dia}`;
+    }
+
     // --- CARGAR TÉCNICOS EN TIEMPO REAL DESDE SUPABASE ---
     async function cargarTecnicosDesdeSupabase() {
         const { data, error } = await supabaseClient
@@ -735,9 +744,10 @@
     function actualizarKPIs(registros) {
         let ok = 0, warning = 0, danger = 0;
         const hoy = new Date();
+        hoy.setHours(0,0,0,0);
 
         registros.forEach(r => {
-            const prox = new Date(r.proximo);
+            const prox = new Date(r.proximo + 'T00:00:00');
             const dias = Math.ceil((prox - hoy) / (1000 * 60 * 60 * 24));
 
             if (dias < 0) danger++;
@@ -765,7 +775,8 @@
 
         registros.forEach((r) => {
             const hoy = new Date();
-            const prox = new Date(r.proximo);
+            hoy.setHours(0,0,0,0);
+            const prox = new Date(r.proximo + 'T00:00:00');
             const diasRestantes = Math.ceil((prox - hoy) / (1000 * 60 * 60 * 24));
 
             let badgeHtml = '';
@@ -824,9 +835,8 @@
     document.getElementById("formEditarRegistro").addEventListener("submit", async function(e) {
         e.preventDefault();
         const id = document.getElementById("edit_id").value;
-        const ultimo = new Date(document.getElementById("edit_fecha_ultimo").value);
-        const proximo = new Date(ultimo);
-        proximo.setDate(proximo.getDate() + 360);
+        const fechaUltimoTexto = document.getElementById("edit_fecha_ultimo").value;
+        const fechaProximoCalculada = calcularFechaUnAnio(fechaUltimoTexto);
 
         const registroActualizado = {
             cliente: document.getElementById("edit_cliente").value,
@@ -834,8 +844,8 @@
             item: document.getElementById("edit_item").value.trim(),
             filtro: document.getElementById("edit_tipo_filtro").value,
             elemento: document.getElementById("edit_elemento").value,
-            ultimo: document.getElementById("edit_fecha_ultimo").value,
-            proximo: proximo.toISOString().split('T')[0],
+            ultimo: fechaUltimoTexto,
+            proximo: fechaProximoCalculada,
             tecnico: document.getElementById("edit_tecnico").value
         };
 
@@ -868,9 +878,8 @@
 
     document.getElementById("filterForm").addEventListener("submit", async function(e) {
         e.preventDefault();
-        const ultimo = new Date(document.getElementById("fecha_ultimo").value);
-        const proximo = new Date(ultimo);
-        proximo.setDate(proximo.getDate() + 360);
+        const fechaUltimoTexto = document.getElementById("fecha_ultimo").value;
+        const fechaProximoCalculada = calcularFechaUnAnio(fechaUltimoTexto);
 
         const nuevoRegistro = {
             cliente: document.getElementById("cliente").value,
@@ -878,8 +887,8 @@
             item: document.getElementById("item").value.trim(),
             filtro: document.getElementById("tipo_filtro").value,
             elemento: document.getElementById("elemento").value,
-            ultimo: document.getElementById("fecha_ultimo").value,
-            proximo: proximo.toISOString().split('T')[0],
+            ultimo: fechaUltimoTexto,
+            proximo: fechaProximoCalculada,
             tecnico: document.getElementById("tecnico").value
         };
 
