@@ -582,9 +582,10 @@
     let registrosGlobales = [];
     let tecnicosGlobales = [];
 
-    // --- FUNCIÓN PARA CALCULAR 1 AÑO EXACTO (SIN ERRORES DE DÍAS) ---
+    // --- FUNCIÓN EXACTA: MANTIENE MES Y DÍA EXACTOS, SOLO SUMA 1 AL AÑO ---
     function calcularFechaUnAnio(fechaTexto) {
-        const partes = fechaTexto.split('-'); // YYYY-MM-DD
+        if (!fechaTexto) return "";
+        const partes = fechaTexto.split('-'); // ["YYYY", "MM", "DD"]
         const ano = parseInt(partes[0], 10) + 1;
         const mes = partes[1];
         const dia = partes[2];
